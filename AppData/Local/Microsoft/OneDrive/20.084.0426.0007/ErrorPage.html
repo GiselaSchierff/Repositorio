@@ -1,0 +1,254 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <title>Error sharing this item</title>
+    <style type="text/css">
+        body, div, button {
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI WestEuropean","Segoe UI",-apple-system,BlinkMacSystemFont,Roboto,"Helvetica Neue",sans-serif;
+            -webkit-font-smoothing: antialiased;
+            box-sizing: border-box;
+        }
+
+        .ErrorNotification {
+            width: 320px;
+            padding: 40px;
+        }
+
+        .GetHelpErrorNotification {
+            width: 400px;
+            padding: 40px;
+        }
+
+        .ErrorNotification-header {
+            margin-bottom: 8px;
+        }
+
+        .ErrorNotification-header-icon {
+            display: inline;
+        }
+
+        .ErrorNotification-header-icon img {
+            width: 17px;
+            height: 17px;
+        }
+
+        .ErrorNotification-header-label {
+            display: inline;
+            font-size: 20px;
+            color: #212121;
+            font-weight: 600;
+        }
+
+        .ErrorNotification-content {
+            font-size: 14px;
+            color: #666666;
+            margin-bottom: 46px;
+        }
+
+        .ErrorNotification-content,
+        .ErrorNotification-footer {
+            width: 240px;
+        }
+
+        .GetHelpErrorNotification-content {
+            width: 320px;
+            margin-bottom: 10px;
+        }
+
+        .ErrorNotification-footer {
+            text-align: right;
+        }
+
+        .GetHelpErrorNotification-footer {
+            width: 320px;
+            text-align: right;
+            display: inline;
+        }
+
+        .ErrorNotification-footer button,
+        .GetHelpErrorNotification-footer button {
+            box-shadow: none;
+            color: #333333;
+            font-size: 14px;
+            font-weight: 400;
+            background-color: #f4f4f4;
+            cursor: pointer;
+            width: 100%;
+            height: 32px;
+            border: none;
+            padding: 4px 20px 6px;
+            margin-bottom: 12px;
+            overflow: visible;
+        }
+
+        .GetHelpErrorNotification-footer button {
+            color: #ffffff;
+            background-color: #0078d4;
+            width: 33%;
+            height: 40px;
+            margin-top: 10px;
+            position: absolute;
+            left: 40px;
+            font-weight: 600;
+        }
+
+        .ErrorNotification-footer button:hover {
+            background-color: #eaeaea;
+        }
+
+        .GetHelpErrorNotification-footer button:hover {
+            background-color: #004d88;
+        }
+
+        .darkMode {
+            color: #ffffff;
+        }
+
+        #logging {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            text-align: left;
+        }
+    </style>
+    
+    <script type="text/javascript">
+        
+    function DebugLog(message) {
+            var loggingElement = document.getElementById("logging");
+            if (loggingElement) {
+                loggingElement.innerHTML += message;
+            }
+        }
+    
+    function updateIfDarkMode() {
+        if (window.external.IsDarkMode() === true) {
+            // Update to neutralDark background, white text and icon
+            document.body.style.backgroundColor = "#212121";
+            document.getElementById("errorTitle").classList.add("darkMode");
+            document.getElementById("errorSubtext").classList.add("darkMode");
+            document.getElementById("errorIcon").src = "alertIconWhite.png";
+        }
+    }
+
+    function updateRTL() {
+        if (typeof window.external['isRTL'] === 'boolean') {
+                DebugLog("window.external[isRTL]=" + window.external['isRTL']+ "<br />");
+                if (window.external['isRTL'] === true) {
+                    document.getElementsByTagName("body")[0].dir = "rtl";
+                }
+        }
+    }
+
+    function safeUpdateElementText(id, propName) {
+        try {
+            if (typeof window.external[propName] === "string") {
+                DebugLog("window.external[" + propName + "]=" + window.external[propName]+ "<br />");
+                document.getElementById(id).innerHTML = window.external[propName];
+            }
+            else if (typeof window.external[propName] === "function") {
+                DebugLog("window.external[" + propName + "]=" + window.external[propName]()+ "<br />");
+                document.getElementById(id).innerHTML = window.external[propName]();
+            }
+        }
+        catch (err) {
+            DebugLog("Exception setting: " + id + "<br />");
+        }
+    }
+
+    function hideElementIfNeeded(id) {
+        var element = document.getElementById(id);
+
+        if (element != null) {
+            if (element.innerHTML === '') {
+                element.style.display = "none";
+            }
+        }
+
+        document.getElementById("logging").innerHTML = "E: " + element + " " + element.innerHTML;
+    }
+    
+    function updateErrorText() {
+        try
+        {
+            if (typeof window.external === 'object') {
+                DebugLog("window.external exists <br />");
+
+                if (window.external.BrowserScenario === "ShareWeb") {
+                    try {
+                        window.external.Resize(320, 500);
+                    }
+                    catch (err) {
+                        DebugLog("Resize exception <br />");
+                    }
+                }
+                else if (window.external.BrowserScenario === "GetHelp") {
+                    document.getElementById("ErrorNotification").classList.remove("ErrorNotification");
+                    document.getElementById("ErrorNotification").classList.add("GetHelpErrorNotification");
+                    document.getElementById("errorSubtext").classList.remove("ErrorNotification-content");
+                    document.getElementById("errorSubtext").classList.add("GetHelpErrorNotification-content");
+                    document.getElementById("errorButtons").classList.remove("ErrorNotification-footer");
+                    document.getElementById("errorButtons").classList.add("GetHelpErrorNotification-footer");
+                }
+                
+                safeUpdateElementText("errorTitle", "errorTitle");
+                safeUpdateElementText("errorSubtext", "errorSecondaryText");
+                safeUpdateElementText("errorPrimaryButton", "errorButtonText");
+
+                safeUpdateElementText("errorSecondaryButton", "secondaryErrorButtonText");
+                hideElementIfNeeded("errorSecondaryButton");
+            }
+            else {
+                DebugLog("No window external \n");
+            }
+        }
+        catch (err) {
+            DebugLog("Can't obtain window.external")
+        }
+    }
+    
+    function onButtonClick() {
+        DebugLog("onButtonClick");
+        try {
+            window.external.RetryNavigate();
+        }
+        catch (err) {
+            DebugLog("Exception calling tryAgain \n");
+        }
+    }
+
+    function onSecondaryButtonClick() {
+        DebugLog("onSecondaryAction");
+        try {
+            window.external.OpenInBrowser();
+        }
+        catch (err) {
+            DebugLog("Exception calling OpenInBrowser \n");
+        }
+    }
+    
+    window.onload = function () {
+        updateIfDarkMode();
+        updateErrorText();
+        updateRTL();
+    }
+    
+    </script>
+</head>
+<body>
+    <div class="ErrorNotification" id="ErrorNotification">
+        <div class="ErrorNotification-header">
+            <div class="ErrorNotification-header-icon"><img src="alertIcon.png" id="errorIcon"></div>
+            <div class="ErrorNotification-header-label" id="errorTitle">Not online</div>
+        </div>
+        <div class="ErrorNotification-content" id="errorSubtext">You are not online. Connect to the internet and try again.</div>
+        <div class="ErrorNotification-footer" id="errorButtons">
+            <button onClick="onButtonClick()" type="submit" id="errorPrimaryButton">[Try again]</button>
+            <button onClick="onSecondaryButtonClick()" type="submit" id="errorSecondaryButton">[Open in browser]</button>
+        </div>
+    </div>
+    <!--<div id="logging">Log: <br /></div>-->
+</body>
+</html>
